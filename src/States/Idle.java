@@ -30,11 +30,17 @@ public class Idle implements State {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String line = in.readLine();
             if(line.startsWith("INVITE")) {
+                String[] strings = line.split(" ");
+                String sipTo=strings[1];
+                String sipFrom=strings[2];
+                String ipTo=strings[3];
+                String ipFrom=strings[4];
+                int voicePort=Integer.parseInt(strings[5]);
                 PrintWriter out;
                 try {
                     out = new PrintWriter(socket.getOutputStream(), true);
                     out.println("100 TRYING");
-                    return new Ringing();
+                    return new Ringing(socket,sipFrom);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

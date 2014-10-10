@@ -1,6 +1,7 @@
 import States.Idle;
 import States.State;
 
+import java.net.Socket;
 import java.io.IOException;
 import java.net.ServerSocket;
 
@@ -9,9 +10,10 @@ import java.net.ServerSocket;
  */
 public class Client {
 
-    ServerSocket socket;
-    State state = new Idle();
-    String sipName;
+    static ServerSocket socket;
+    static Socket client=null;
+    static State state = new Idle();
+    static String sipName;
 
     private static class ConnectionHandler implements Runnable {
 
@@ -29,7 +31,10 @@ public class Client {
                 e.printStackTrace();
             }
             try {
-                socket.accept();
+                while(true){
+                    client=socket.accept();
+                    state.handleInput(client);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -40,5 +45,14 @@ public class Client {
         ConnectionHandler handler = new ConnectionHandler(Integer.parseInt(args[0]));
         sipName = args[1];
         new Thread(handler).start();
+
+        while(client==null){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
     }
 }
