@@ -30,6 +30,7 @@ public class Client {
             try {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String line = bufferedReader.readLine();
+                System.out.println("Received: "+line);
                 state.handleInput(line, socket);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -70,12 +71,13 @@ public class Client {
         try {
             ServerSocket server = new ServerSocket(Integer.parseInt(args[0]));
             CallHandler handler = new CallHandler();
-            Thread handlerThread = new Thread(handler);
+           Thread handlerThread = new Thread(handler);
             while (true) {
                 Socket socket = server.accept();
-                handlerThread.stop();
+                System.out.println("Server.accept()");
+               handlerThread.stop();
                 InputHandler inputHandler = new InputHandler(socket);
-                new Thread(inputHandler);
+               inputHandler.run();
             }
         } catch (IOException e) {
             e.printStackTrace();
