@@ -1,8 +1,8 @@
 package States;
 
-import java.io.BufferedReader;
+import Audio.AudioStreamUDP;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -11,42 +11,36 @@ import java.net.Socket;
  */
 public class Idle implements State {
 
-    public State sendInvite(Socket socket, String sipTo, String sipFrom, int voicePort) {
+    public State sendInvite(Socket socket, String sipTo, String sipFrom, AudioStreamUDP stream) {
         String ipTo = socket.getRemoteSocketAddress().toString();
         String ipFrom = socket.getLocalSocketAddress().toString();
         PrintWriter out;
         try {
             out = new PrintWriter(socket.getOutputStream(), true);
-            out.println("INVITE " + sipTo + " " + sipFrom + " " + ipTo + " " + ipFrom + " " + voicePort);
+            out.println("INVITE " + sipTo + " " + sipFrom + " " + ipTo + " " + ipFrom + " " + stream.getLocalPort());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new WaitTrying();
+        return new WaitTrying(stream);
     }
 
     @Override
-    public State handleInput(Socket socket) {
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String line = in.readLine();
-            if(line.startsWith("INVITE")) {
-                String[] strings = line.split(" ");
-                String sipTo=strings[1];
-                String sipFrom=strings[2];
-                String ipTo=strings[3];
-                String ipFrom=strings[4];
-                int voicePort=Integer.parseInt(strings[5]);
-                PrintWriter out;
-                try {
-                    out = new PrintWriter(socket.getOutputStream(), true);
-                    out.println("100 TRYING");
-                    return new Ringing(socket,sipFrom);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+    public State handleInput(String input, Socket socket) {
+        if(input.startsWith("INVITE")) {
+            String[] strings = input.split(" ");
+            String sipTo = strings[1];
+            String sipFrom = strings[2];
+            String ipTo = strings[3];
+            String ipFrom = strings[4];
+            int voicePort = Integer.parseInt(strings[5]);
+            PrintWriter out;
+            try {
+                out = new PrintWriter(socket.getOutputStream(), true);
+                out.println("100 TRYING");
+                return new Ringing(socket, sipFrom, voicePort);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return this;
     }

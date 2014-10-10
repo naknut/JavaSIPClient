@@ -1,8 +1,6 @@
 package States;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
@@ -10,11 +8,13 @@ import java.util.Scanner;
 /**
  * Created by Naknut on 10/10/14.
  */
-public class Ringing implements State {
+public class Ringing extends BusyState {
 
     Boolean okSent = false;
+    int voicePort;
 
-    public Ringing(Socket socket, String sipFrom) {
+    public Ringing(Socket socket, String sipFrom, int voicePort) {
+        this.voicePort = voicePort;
         System.out.println("Call from " + sipFrom);
         System.out.println("Pick up? Y/N");
         PrintWriter out;
@@ -33,16 +33,9 @@ public class Ringing implements State {
     }
 
     @Override
-    public State handleInput(Socket socket) {
-        BufferedReader in = null;
-        try {
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String line = in.readLine();
-            if(okSent && line.equals("ACK"))
-                return new Conversation();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public State handleInput(String input, Socket socket) {
+        if(okSent && input.equals("ACK"))
+            return new Conversation();
         return this;
     }
 }

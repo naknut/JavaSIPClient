@@ -7,5 +7,5 @@ import java.net.Socket;
  */
 public interface State {
 
-    public State handleInput(Socket socket);
+    public State handleInput(String input, Socket socket);
 }
