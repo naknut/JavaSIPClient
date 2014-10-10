@@ -32,12 +32,12 @@ public class Idle implements State {
             String sipFrom = strings[2];
             String ipTo = strings[3];
             String ipFrom = strings[4];
-            int voicePort = Integer.parseInt(strings[5]);
+            int remotePort = Integer.parseInt(strings[5]);
             PrintWriter out;
             try {
                 out = new PrintWriter(socket.getOutputStream(), true);
                 out.println("100 TRYING");
-                return new Ringing(socket, sipFrom, voicePort);
+                return new Ringing(socket, sipFrom, remotePort);
             } catch (IOException e) {
                 e.printStackTrace();
             }

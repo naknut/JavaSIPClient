@@ -2,6 +2,8 @@ package States;
 
 import Audio.AudioStreamUDP;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
@@ -19,7 +21,8 @@ public class WaitRinging extends BusyState {
     public State handleInput(String input, Socket socket) {
         if(input.startsWith("200 OK")) {
             String[] tokens = input.split(" ");
-            return new Conversation(stream, Integer.parseInt(tokens[2]));
+            InetAddress remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress();
+            return new Conversation(socket, stream, remoteAddress, Integer.parseInt(tokens[2]));
         }
         else if(input.startsWith("INVITE"))
             sendBusy(socket);

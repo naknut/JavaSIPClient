@@ -1,7 +1,11 @@
 package States;
 
+import Audio.AudioStreamUDP;
+
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -10,11 +14,12 @@ import java.util.Scanner;
  */
 public class Ringing extends BusyState {
 
+    AudioStreamUDP stream;
     Boolean okSent = false;
-    int voicePort;
+    int remotePort;
 
-    public Ringing(Socket socket, String sipFrom, int voicePort) {
-        this.voicePort = voicePort;
+    public Ringing(Socket socket, String sipFrom, int remotePort) {
+        this.remotePort = remotePort;
         System.out.println("Call from " + sipFrom);
         System.out.println("Pick up? Y/N");
         PrintWriter out;
@@ -24,7 +29,8 @@ public class Ringing extends BusyState {
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
             if(line.equals("Y")) {
-                out.println("200 OK");
+                stream = new AudioStreamUDP();
+                out.println("200 OK " + stream.getLocalPort());
                 okSent = true;
             }
         } catch (IOException e) {
@@ -34,8 +40,10 @@ public class Ringing extends BusyState {
 
     @Override
     public State handleInput(String input, Socket socket) {
-        if(okSent && input.equals("ACK"))
-            return new Conversation();
+        if(okSent && input.equals("ACK")) {
+            InetAddress remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress();
+            return new Conversation(socket, stream, remoteAddress, remotePort);
+        }
         return this;
     }
 }
