@@ -12,8 +12,10 @@ import java.net.Socket;
 public class WaitRinging extends BusyState {
 
     AudioStreamUDP stream;
+    String sipName;
 
-    public WaitRinging(AudioStreamUDP stream) {
+    public WaitRinging(AudioStreamUDP stream, String sipName) {
+        this.sipName=sipName;
         this.stream = stream;
     }
 
@@ -22,10 +24,15 @@ public class WaitRinging extends BusyState {
         if(input.startsWith("200 OK")) {
             String[] tokens = input.split(" ");
             InetAddress remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress();
-            return new Conversation(socket, stream, remoteAddress, Integer.parseInt(tokens[2]));
+            return new Conversation(socket, stream, remoteAddress, Integer.parseInt(tokens[2]),sipName);
         }
         else if(input.startsWith("INVITE"))
             sendBusy(socket);
+        return this;
+    }
+
+    @Override
+    public State handleUserInput(String input) {
         return this;
     }
 }

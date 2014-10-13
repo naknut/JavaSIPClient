@@ -6,51 +6,40 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
-import java.util.Scanner;
 
 /**
  * Created by Naknut on 10/10/14.
  */
 public class Conversation extends BusyState {
 
-    Scanner scanner;
+    Socket socket;
+    String sipName;
     Boolean byeSent = false;
     AudioStreamUDP stream;
 
-    public Conversation(Socket socket, AudioStreamUDP stream, InetAddress remoteAddress, int remotePort) {
+    public Conversation(Socket socket, AudioStreamUDP stream, InetAddress remoteAddress, int remotePort, String sipName) {
         this.stream = stream;
+        this.socket=socket;
         try {
             this.stream.connectTo(remoteAddress, remotePort);
             this.stream.startStreaming();
             System.out.print("Press ENTER to hang up.");
-            scanner.nextLine();
-            PrintWriter out = new PrintWriter(socket.getOutputStream());
-            out.println("BYE");
-            byeSent = true;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.sipName=sipName;
     }
 
     @Override
     public State handleInput(String input, Socket socket) {
         if(input.startsWith("BYE")) {
-            scanner.close();
             stream.close();
-            try {
-                PrintWriter out = new PrintWriter(socket.getOutputStream());
-                out.println("200 OK");
-                return new Idle();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            return new Idle(sipName);
         } else if(input.startsWith("200 OK") && byeSent) {
             try {
                 socket.close();
-                scanner.close();
                 stream.close();
-                return new Idle();
+                return new Idle(sipName);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -58,5 +47,28 @@ public class Conversation extends BusyState {
             sendBusy(socket);
         }
         return this;
+    }
+
+    @Override
+    public State handleUserInput(String input) {
+
+        if((input.startsWith("END"))){
+            PrintWriter out = null;
+            try {
+                out = new PrintWriter(socket.getOutputStream(), true);
+                out.println("BYE");
+                byeSent = true;
+                System.out.println("Bye sent");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            finally{
+                return new Idle(sipName);
+            }
+        }
+        else{
+            return this;
+        }
+
     }
 }

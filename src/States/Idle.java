@@ -10,6 +10,11 @@ import java.net.Socket;
  * Created by Naknut on 10/10/14.
  */
 public class Idle implements State {
+    boolean somebodyIsCalling=false;
+    String sipName;
+    public Idle(String sipName){
+        this.sipName=sipName;
+    }
 
     public State sendInvite(Socket socket, String sipTo, String sipFrom, AudioStreamUDP stream) {
         String ipTo = socket.getRemoteSocketAddress().toString();
@@ -21,7 +26,7 @@ public class Idle implements State {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new WaitTrying(stream);
+        return new WaitTrying(stream,sipName);
     }
 
     @Override
@@ -37,11 +42,30 @@ public class Idle implements State {
             try {
                 out = new PrintWriter(socket.getOutputStream(), true);
                 out.println("100 TRYING");
-                return new Ringing(socket, sipFrom, remotePort);
+                return new Ringing(socket, sipFrom, remotePort,sipName);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        return this;
+    }
+
+    @Override
+    public State handleUserInput(String input) {
+        if(input.startsWith("INVITE")){
+            String[] tokens = input.split(" ");
+            try {
+                Socket socket = new Socket(tokens[0], Integer.parseInt(tokens[1]));
+                AudioStreamUDP stream = new AudioStreamUDP();
+                sendInvite(socket, tokens[2], sipName, stream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return this;
+        }
+
+        System.out.println("Unexpected input");
         return this;
     }
 }

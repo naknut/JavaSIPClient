@@ -1,4 +1,3 @@
-import Audio.AudioStreamUDP;
 import States.Idle;
 import States.State;
 
@@ -14,17 +13,17 @@ import java.util.Scanner;
  */
 public class Client {
 
-    static State state = new Idle();
+    static State state;
     static String sipName;
     static ServerSocket server;
-    static Thread t2;
-    static Thread t1;
+    static Thread userInputThread;
+    static Thread serverThread;
 
-    private static class InputHandler implements Runnable {
+    private static class SocketInputHandler implements Runnable {
 
         Socket socket;
 
-        public InputHandler(Socket socket) {
+        public SocketInputHandler(Socket socket) {
             this.socket = socket;
         }
 
@@ -32,53 +31,50 @@ public class Client {
         public void run() {
             try {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                String line = bufferedReader.readLine();
-                System.out.println("Received: "+line);
-                state.handleInput(line, socket);
+                String line;
+                while(true){
+                    line = bufferedReader.readLine();
+                    System.out.println("Received: "+line);
+                    state = state.handleInput(line, socket);
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Connection closed");
             }
         }
     }
 
-    private static class CallHandler implements Runnable {
-
-        Scanner scanner;
-
-        public void exit() {
-            scanner.close();
-        }
+    private static class UserInputHandler implements Runnable {
 
         @Override
         public void run() {
-            System.out.print("Write hostname, port and sip-name of who to call: ");
-            scanner = new Scanner(System.in);
-            String line = scanner.nextLine();
-            String[] tokens = line.split(" ");
-            synchronized (state) {
-                try {
-                    Socket socket = new Socket(tokens[0], Integer.parseInt(tokens[1]));
-                    if(state instanceof Idle) {
-                        AudioStreamUDP stream = new AudioStreamUDP();
-                        ((Idle) state).sendInvite(socket, tokens[2], sipName, stream);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+            Scanner scanner = new Scanner(System.in);
+            while (true) {
+                String input = scanner.nextLine();
+                if(input.startsWith("/exit")){
+                    System.exit(0);
                 }
+                else if(input.startsWith("/state")){
+                    System.out.println("Current state: "+state.getClass().getSimpleName());
+                }
+                else{
+                    state = state.handleUserInput(input);
+                }
+
             }
         }
     }
+
+
+
 
     public static void main(String[] args) {
         System.out.println("SIP Client started");
         sipName = args[1];
-        ServerThread server=new ServerThread(Integer.parseInt(args[0]));
-        t1 = new Thread(server);
-        t1.start();
-        CallHandler callHandler= new CallHandler();
-        callHandler.run();
-        t2=new Thread(callHandler);
-        t1.start();
+        state=new Idle(sipName);
+        serverThread = new Thread(new ServerThread(Integer.parseInt(args[0])));
+        serverThread.start();
+        userInputThread=new Thread(new UserInputHandler());
+        userInputThread.start();
 
     }
 
@@ -98,13 +94,16 @@ public class Client {
                 Socket socket = null;
                 try {
                     socket = server.accept();
-                    t1.stop();
-                    InputHandler inputHandler = new InputHandler(socket);
+                    SocketInputHandler inputHandler = new SocketInputHandler(socket);
                     inputHandler.run();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
             }
         }
+    }
+
+    public static void resetState(){
+       state=new Idle(sipName);
     }
 }

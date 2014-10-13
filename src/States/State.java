@@ -8,4 +8,5 @@ import java.net.Socket;
 public interface State {
 
     public State handleInput(String input, Socket socket);
+    public State handleUserInput(String input);
 }
