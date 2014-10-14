@@ -44,7 +44,7 @@ public class Idle implements State {
             try {
                 out = new PrintWriter(socket.getOutputStream(), true);
                 out.println("100 TRYING");
-                return new Ringing(socket, sipFrom, remotePort,sipName);
+                return new Ringing(socket, sipFrom, remotePort, sipName);
             } catch (IOException e) {
                 e.printStackTrace();
             }

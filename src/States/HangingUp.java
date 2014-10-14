@@ -28,6 +28,8 @@ public class HangingUp extends BusyState {
                 e.printStackTrace();
             }
             return new Idle(sipName);
+        } else if(input.startsWith("INVITE")) {
+            sendBusy(socket);
         }
         return this;
     }

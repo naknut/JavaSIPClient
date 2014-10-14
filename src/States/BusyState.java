@@ -13,6 +13,7 @@ public abstract class BusyState implements State {
         try {
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             out.println("BUSY");
+            socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
