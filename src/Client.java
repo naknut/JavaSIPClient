@@ -42,6 +42,7 @@ public class Client {
                     } else {
                         System.out.println("Remote closed its socket");
                         socket.close();
+                        state = new Idle(sipName);
                     }
                 }
             } catch (IOException e) {
