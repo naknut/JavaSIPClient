@@ -58,9 +58,9 @@ public class Idle implements State {
             String[] tokens = input.split(" ");
             AudioStreamUDP stream = null;
             try {
-                Socket socket = new Socket(tokens[0], Integer.parseInt(tokens[1]));
+                Socket socket = new Socket(tokens[1], Integer.parseInt(tokens[2]));
                 stream = new AudioStreamUDP();
-                sendInvite(socket, tokens[2], sipName, stream);
+                sendInvite(socket, tokens[3], sipName, stream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
