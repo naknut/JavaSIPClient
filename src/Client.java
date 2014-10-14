@@ -63,8 +63,8 @@ public class Client {
                             AudioStreamUDP stream = null;
                             try {
                                 Socket socket = new Socket(tokens[1], Integer.parseInt(tokens[2]));
-                                SocketInputHandler socketThread=new SocketInputHandler(socket);
-                                socketThread.run();
+                                SocketInputHandler inputHandler=new SocketInputHandler(socket);
+                                new Thread(inputHandler).start();
                                 state = ((Idle) state).handleInvite(input, socket);
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -115,7 +115,7 @@ public class Client {
                 try {
                     socket = server.accept();
                     SocketInputHandler inputHandler = new SocketInputHandler(socket);
-                    inputHandler.run();
+                    new Thread(inputHandler).start();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
