@@ -1,3 +1,4 @@
+import Audio.AudioStreamUDP;
 import States.Idle;
 import States.State;
 
@@ -54,6 +55,22 @@ public class Client {
                 String input = scanner.nextLine();
                 if(input.startsWith("/exit")){
                     System.exit(0);
+                }
+                else if(input.startsWith("INVITE")){
+                    synchronized (state){
+                        if(state instanceof Idle){
+                            String[] tokens = input.split(" ");
+                            AudioStreamUDP stream = null;
+                            try {
+                                Socket socket = new Socket(tokens[1], Integer.parseInt(tokens[2]));
+                                SocketInputHandler socketThread=new SocketInputHandler(socket);
+                                socketThread.run();
+                                state = ((Idle) state).handleInvite(input, socket);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                 }
                 else if(input.startsWith("/state")){
                     System.out.println("Current state: "+state.getClass().getSimpleName());

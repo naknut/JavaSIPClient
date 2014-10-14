@@ -71,4 +71,21 @@ public class Idle implements State {
         System.out.println("Unexpected input");
         return this;
     }
+
+    public State handleInvite(String input, Socket socket){
+        if(input.startsWith("INVITE")){
+            String[] tokens = input.split(" ");
+            AudioStreamUDP stream = null;
+            try {
+                stream = new AudioStreamUDP();
+                sendInvite(socket, tokens[3], sipName, stream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return new WaitTrying(stream, sipName);
+        }
+
+        return this;
+    }
+
 }
