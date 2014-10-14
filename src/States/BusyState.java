@@ -9,7 +9,7 @@ import java.net.Socket;
  */
 public abstract class BusyState implements State {
 
-    void sendBusy(Socket socket) {
+    protected void sendBusy(Socket socket) {
         try {
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             out.println("BUSY");

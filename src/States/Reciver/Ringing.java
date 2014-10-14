@@ -1,6 +1,8 @@
-package States;
+package States.Reciver;
 
 import Audio.AudioStreamUDP;
+import States.BusyState;
+import States.State;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,14 +31,11 @@ public class Ringing extends BusyState {
 
     @Override
     public State handleInput(String input, Socket socket) {
-        System.out.println("Ringing state received: "+input);
-        if(okSent && input.startsWith("ACK")) {
-            System.out.println("ACK received");
-            InetAddress remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress();
-            return new Conversation(socket, stream, remoteAddress, remotePort,sipName);
-        }
+        if(input.startsWith("INVITE"))
+            sendBusy(socket);
         return this;
     }
+
     @Override
     public State handleUserInput(String input) {
         PrintWriter out;
@@ -50,7 +49,8 @@ public class Ringing extends BusyState {
                 okSent = true;
 
                 System.out.println("OK sent");
-                return this;
+                InetAddress remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress();
+                return new WaitAck(stream, sipName, remoteAddress, remotePort);
             }
         } catch (IOException e) {
             e.printStackTrace();
