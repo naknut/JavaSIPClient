@@ -36,8 +36,12 @@ public class Client {
                 while(!socket.isClosed()){
                     line = bufferedReader.readLine();
                     System.out.println("Received: "+line);
+                    if(line != null)
                     synchronized (state) {
                         state = state.handleInput(line, socket);
+                    } else {
+                        System.out.println("Remote closed its socket");
+                        socket.close();
                     }
                 }
             } catch (IOException e) {
