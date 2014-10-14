@@ -32,10 +32,12 @@ public class Client {
             try {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String line;
-                while(true){
+                while(!socket.isClosed()){
                     line = bufferedReader.readLine();
                     System.out.println("Received: "+line);
-                    state = state.handleInput(line, socket);
+                    synchronized (state) {
+                        state = state.handleInput(line, socket);
+                    }
                 }
             } catch (IOException e) {
                 System.out.println("Connection closed");
@@ -57,9 +59,10 @@ public class Client {
                     System.out.println("Current state: "+state.getClass().getSimpleName());
                 }
                 else{
-                    state = state.handleUserInput(input);
+                    synchronized (state) {
+                        state = state.handleUserInput(input);
+                    }
                 }
-
             }
         }
     }

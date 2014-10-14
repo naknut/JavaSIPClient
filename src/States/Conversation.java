@@ -62,7 +62,7 @@ public class Conversation extends BusyState {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            finally{
+            finally {
                 return new Idle(sipName);
             }
         }

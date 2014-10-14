@@ -54,15 +54,16 @@ public class Idle implements State {
     public State handleUserInput(String input) {
         if(input.startsWith("INVITE")){
             String[] tokens = input.split(" ");
+            AudioStreamUDP stream = null;
             try {
                 Socket socket = new Socket(tokens[0], Integer.parseInt(tokens[1]));
-                AudioStreamUDP stream = new AudioStreamUDP();
+                stream = new AudioStreamUDP();
                 sendInvite(socket, tokens[2], sipName, stream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            return this;
+            return new WaitTrying(stream, sipName);
         }
 
         System.out.println("Unexpected input");
