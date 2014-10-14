@@ -3,8 +3,10 @@ package States.Caller;
 import Audio.AudioStreamUDP;
 import States.BusyState;
 import States.Caller.WaitRinging;
+import States.Idle;
 import States.State;
 
+import java.io.IOException;
 import java.net.Socket;
 
 
@@ -28,6 +30,15 @@ public class WaitTrying extends BusyState {
         else if(input.startsWith("INVITE")) {
             sendBusy(socket);
         }
+        else if(input.startsWith("BUSY")){
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return new Idle(sipName);
+        }
+
         return this;
     }
 
