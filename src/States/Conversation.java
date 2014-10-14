@@ -34,6 +34,14 @@ public class Conversation extends BusyState {
     public State handleInput(String input, Socket socket) {
         if(input.startsWith("BYE")) {
             stream.close();
+            PrintWriter out = null;
+            try {
+                out = new PrintWriter(socket.getOutputStream(), true);
+                out.println("200 OK");
+                byeSent = true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return new Idle(sipName);
         } else if(input.startsWith("200 OK") && byeSent) {
             try {
@@ -63,7 +71,7 @@ public class Conversation extends BusyState {
                 e.printStackTrace();
             }
             finally {
-                return new Idle(sipName);
+                return new HangingUp(stream, sipName);
             }
         }
         else{
