@@ -38,7 +38,7 @@ public class Conversation extends BusyState {
             try {
                 out = new PrintWriter(socket.getOutputStream(), true);
                 out.println("200 OK");
-                byeSent = true;
+                socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -70,13 +70,8 @@ public class Conversation extends BusyState {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            finally {
-                return new HangingUp(stream, sipName);
-            }
+            return new HangingUp(stream, sipName);
         }
-        else{
-            return this;
-        }
-
+        return this;
     }
 }
