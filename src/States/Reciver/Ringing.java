@@ -2,6 +2,7 @@ package States.Reciver;
 
 import Audio.AudioStreamUDP;
 import States.BusyState;
+import States.Idle;
 import States.State;
 
 import java.io.IOException;
@@ -51,6 +52,10 @@ public class Ringing extends BusyState {
                 System.out.println("OK sent");
                 InetAddress remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress();
                 return new WaitAck(stream, sipName, remoteAddress, remotePort);
+            }
+            else if(input.equals("N")) {
+                sendBusy(socket);
+                return new Idle(sipName);
             }
         } catch (IOException e) {
             e.printStackTrace();
