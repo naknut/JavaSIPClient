@@ -1,4 +1,4 @@
 JavaSIPClient
 =============
 
-A simple implementation of SIP using Java
+A dumbed down implementation of SIP using Java
